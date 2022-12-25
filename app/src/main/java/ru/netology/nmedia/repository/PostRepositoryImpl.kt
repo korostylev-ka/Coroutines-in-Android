@@ -54,11 +54,13 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         try {
+            //удаляем из локальной базы сначала
+            dao.removeById(id)
             val response = PostsApi.service.removeById(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-            dao.removeById(id)
+
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -68,6 +70,8 @@ class PostRepositoryImpl(
 
     override suspend fun likeById(id: Long, isLiked: Boolean) {
         try {
+            //сначала локально в базе
+            dao.likeById(id)
             //ответ на вызов в зависимости от был ли уже лайк
             val response = when (isLiked) {
                 false -> PostsApi.service.likeById(id)
@@ -76,7 +80,6 @@ class PostRepositoryImpl(
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-            dao.likeById(id)
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
